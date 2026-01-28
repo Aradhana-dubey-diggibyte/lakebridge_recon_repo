@@ -56,7 +56,7 @@ targets:
       host: https://adb-7488500312027058.18.azuredatabricks.net
       profile: DEFAULT
 
-      # 🔥 CRITICAL FIX 🔥
+      #  CRITICAL FIX 
       # Forces Databricks to use user workspace
       # Prevents default "remorph" catalog usage
       root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
