@@ -12,61 +12,65 @@ resources:
         pause_status: PAUSED
 
       tasks:
-        # --- Task 1: Config ---
+        # -----------------------------
+        # Task 1: Config
+        # -----------------------------
         - task_key: lakebridge_recon_config
-          # Cluster ID attached directly to the task
           existing_cluster_id: "0422-125216-1t83bm6v"
-          
+
           notebook_task:
-            notebook_path: ./notebook/recon_config_notebook.ipynb
+            notebook_path: ./notebook/NB_recon_config.ipynb
             base_parameters:
               config_path: /Volumes/learning_lab_catalog/recon_csv/recon_config/recon_config.csv
               target_env: "${bundle.target}"
-          
+
           timeout_seconds: 600
 
-        # --- Task 2: Runner ---
+        # -----------------------------
+        # Task 2: Runner
+        # -----------------------------
         - task_key: lakebridge_recon_runner
           depends_on:
             - task_key: lakebridge_recon_config
-          
+
           run_if: ALL_SUCCESS
-          
-          # Cluster ID attached directly to the task
           existing_cluster_id: "0422-125216-1t83bm6v"
 
           notebook_task:
-            notebook_path: ./notebook/recon_execution_runner.ipynb
+            notebook_path: ./notebook/NB_recon_runner.ipynb
             base_parameters:
               recon_config: "{{tasks.lakebridge_recon_config.values.result}}"
               target_env: "${bundle.target}"
-          
+
           timeout_seconds: 3600
 
 targets:
   # ==========================================
-  #  DEV
+  # DEV
   # ==========================================
   dev:
     mode: development
     default: true
+
     workspace:
       host: https://adb-7488500312027058.18.azuredatabricks.net
       profile: DEFAULT
 
+      # 🔥 CRITICAL FIX 🔥
+      # Forces Databricks to use user workspace
+      # Prevents default "remorph" catalog usage
+      root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+
   # ==========================================
-  #  PROD (Mock)
+  # PROD (enable later)
   # ==========================================
-  #prod:
-    #mode: production
-    #workspace:
-      #host: https://adb-7488500312027058.18.azuredatabricks.net
-      #profile: DEFAULT
-      
-      #  THIS FIXED THE ERROR
-      # We must explicitly tell Databricks where to put Prod files
-      #root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
-    
-    # Ensures the job runs as YOU (needed for Prod mode usually)
-    #run_as:
-      #user_name: ${workspace.current_user.userName}
+  # prod:
+  #   mode: production
+  #   workspace:
+  #     host: https://adb-7488500312027058.18.azuredatabricks.net
+  #     profile: DEFAULT
+  #
+  #     root_path: /Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+  #
+  #   run_as:
+  #     user_name: ${workspace.current_user.userName}
